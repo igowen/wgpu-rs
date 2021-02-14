@@ -25,14 +25,15 @@ var<in> in_tex_coord_fs: vec2<f32>;
 [[location(0)]]
 var<out> out_color: vec4<f32>;
 [[group(0), binding(1)]]
-var r_color: texture_2d<f32>;
+var r_color: texture_2d<u32>;
 [[group(0), binding(2)]]
 var r_sampler: sampler;
 
 [[stage(fragment)]]
 fn fs_main() {
-    var tex: vec4<f32> = textureSample(r_color, r_sampler, in_tex_coord_fs);
-    out_color = tex;
+    var tex: vec4<u32> = textureSample(r_color, r_sampler, in_tex_coord_fs);
+    var v: f32 = f32(tex.x) / 255.0;
+    out_color = vec4<f32>(1.0 - (v * 5.0), 1.0 - (v * 15.0), 1.0 - (v * 50.0), 1.0);
     //TODO: support `length` and `mix` functions
     //var mag: f32 = length(in_tex_coord_fs-vec2<f32>(0.5, 0.5));
     //out_color = vec4<f32>(mix(tex.xyz, vec3<f32>(0.0, 0.0, 0.0), mag*mag), 1.0);

@@ -67,7 +67,7 @@ fn create_vertices() -> (Vec<Vertex>, Vec<u16>) {
 
 fn create_texels(size: usize) -> Vec<u8> {
     (0..size * size)
-        .flat_map(|id| {
+        .map(|id| {
             // get high five for recognizing this ;)
             let cx = 3.0 * (id % size) as f32 / (size - 1) as f32 - 2.0;
             let cy = 2.0 * (id / size) as f32 / (size - 1) as f32 - 1.0;
@@ -78,10 +78,7 @@ fn create_texels(size: usize) -> Vec<u8> {
                 y = 2.0 * old_x * y + cy;
                 count += 1;
             }
-            iter::once(0xFF - (count * 5) as u8)
-                .chain(iter::once(0xFF - (count * 15) as u8))
-                .chain(iter::once(0xFF - (count * 50) as u8))
-                .chain(iter::once(1))
+            count
         })
         .collect()
 }
@@ -155,7 +152,7 @@ impl framework::Example for Example {
                     visibility: wgpu::ShaderStage::FRAGMENT,
                     ty: wgpu::BindingType::Texture {
                         multisampled: false,
-                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        sample_type: wgpu::TextureSampleType::Uint,
                         view_dimension: wgpu::TextureViewDimension::D2,
                     },
                     count: None,
@@ -165,7 +162,7 @@ impl framework::Example for Example {
                     visibility: wgpu::ShaderStage::FRAGMENT,
                     ty: wgpu::BindingType::Sampler {
                         comparison: false,
-                        filtering: true,
+                        filtering: false,
                     },
                     count: None,
                 },
@@ -191,7 +188,7 @@ impl framework::Example for Example {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8UnormSrgb,
+            format: wgpu::TextureFormat::R8Uint,
             usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
         });
         let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
@@ -204,8 +201,8 @@ impl framework::Example for Example {
             &texels,
             wgpu::TextureDataLayout {
                 offset: 0,
-                bytes_per_row: 4 * size,
-                rows_per_image: 0,
+                bytes_per_row: size,
+                rows_per_image: size,
             },
             texture_extent,
         );
